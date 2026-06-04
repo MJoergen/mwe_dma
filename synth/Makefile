@@ -1,6 +1,11 @@
 # List of source files
 SRC_DIR = ../src
+SRC += $(SRC_DIR)/bram.vhd
+SRC += $(SRC_DIR)/cart.vhd
+SRC += $(SRC_DIR)/crc.vhd
 SRC += $(SRC_DIR)/mwe.vhd
+SRC += $(SRC_DIR)/sweeper.vhd
+
 
 PLATFORM_SRC_DIR = .
 SRC += $(PLATFORM_SRC_DIR)/clk_rst.vhd
@@ -17,6 +22,7 @@ VIVADO_DIR = /opt/Xilinx/2025.1/Vivado
 PART = xc7a200tfbg484-2
 
 XDC = $(PLATFORM_SRC_DIR)/mega65r6.xdc
+XDC += $(PLATFORM_SRC_DIR)/timing.xdc
 
 OPTIONS += -flatten_hierarchy none
 

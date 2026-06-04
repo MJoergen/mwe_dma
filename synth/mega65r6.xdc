@@ -386,7 +386,6 @@ set_property -dict {PACKAGE_PIN W21  IOSTANDARD LVCMOS33} [get_ports {cart_d_io[
 ################################
 
 create_clock           -name clk   -period 10 [get_ports clk_i];
-create_generated_clock -name core_clk         [get_pins  clk_rst_inst/mmcme2_base_inst/CLKOUT0];
 
 
 ###############################################################################

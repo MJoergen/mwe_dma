@@ -40,10 +40,10 @@ entity mwe_mega65r6 is
     cart_addr_en_o    : out   std_logic;
     cart_haddr_dir_o  : out   std_logic; -- =1 means FPGA->Port, =0 means Port->FPGA
     cart_laddr_dir_o  : out   std_logic; -- =1 means FPGA->Port, =0 means Port->FPGA
-    cart_a_io         : inout unsigned(15 downto 0);
+    cart_a_io         : inout std_logic_vector(15 downto 0);
     cart_data_en_o    : out   std_logic;
     cart_data_dir_o   : out   std_logic; -- =1 means FPGA->Port, =0 means Port->FPGA
-    cart_d_io         : inout unsigned(7 downto 0)
+    cart_d_io         : inout std_logic_vector(7 downto 0)
   );
 end entity mwe_mega65r6;
 
@@ -51,6 +51,9 @@ architecture synthesis of mwe_mega65r6 is
 
   signal core_clk : std_logic;
   signal core_rst : std_logic;
+
+  signal fast_clk : std_logic;
+  signal fast_rst : std_logic;
 
   signal cart_en        : std_logic;
   signal cart_reset_oe  : std_logic;
@@ -84,11 +87,11 @@ architecture synthesis of mwe_mega65r6 is
   signal cart_io1_out   : std_logic;
   signal cart_io2_out   : std_logic;
   signal cart_addr_oe   : std_logic;
-  signal cart_a_in      : unsigned(15 downto 0);
-  signal cart_a_out     : unsigned(15 downto 0);
+  signal cart_a_in      : std_logic_vector(15 downto 0);
+  signal cart_a_out     : std_logic_vector(15 downto 0);
   signal cart_data_oe   : std_logic;
-  signal cart_d_in      : unsigned(7 downto 0);
-  signal cart_d_out     : unsigned(7 downto 0);
+  signal cart_d_in      : std_logic_vector(7 downto 0);
+  signal cart_d_out     : std_logic_vector(7 downto 0);
 
 begin
 
@@ -97,13 +100,17 @@ begin
       clk_i      => clk_i,
       rst_i      => reset_button_i,
       core_clk_o => core_clk,
-      core_rst_o => core_rst
+      core_rst_o => core_rst,
+      fast_clk_o => fast_clk,
+      fast_rst_o => fast_rst
     ); -- clk_rst_inst : entity work.clk_rst
 
   mwe_inst : entity work.mwe
     port map (
       core_clk_i      => core_clk,
       core_rst_i      => core_rst,
+      fast_clk_i      => fast_clk,
+      fast_rst_i      => fast_rst,
       uart_rxd_i      => uart_rxd_i,
       uart_txd_o      => uart_txd_o,
       cart_en_o       => cart_en,      -- Enable port, active high

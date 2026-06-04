@@ -14,7 +14,10 @@ entity clk_rst is
     rst_i      : in    std_logic;
 
     core_clk_o : out   std_logic;
-    core_rst_o : out   std_logic
+    core_rst_o : out   std_logic;
+
+    fast_clk_o : out   std_logic;
+    fast_rst_o : out   std_logic
   );
 end entity clk_rst;
 
@@ -22,6 +25,7 @@ architecture synthesis of clk_rst is
 
   signal pll_fb       : std_logic;
   signal pll_core_clk : std_logic;
+  signal pll_fast_clk : std_logic;
   signal pll_locked   : std_logic;
 
 begin
@@ -35,6 +39,9 @@ begin
       CLKOUT0_DIVIDE_F   => 32.000, -- OUTPUT @ 31.25 MHz
       CLKOUT0_DUTY_CYCLE => 0.500,
       CLKOUT0_PHASE      => 0.000,
+      CLKOUT1_DIVIDE     => 4,      -- OUTPUT @ 250 MHz
+      CLKOUT1_DUTY_CYCLE => 0.500,
+      CLKOUT1_PHASE      => 0.000,
       DIVCLK_DIVIDE      => 1,
       REF_JITTER1        => 0.010,
       STARTUP_WAIT       => FALSE
@@ -45,6 +52,7 @@ begin
       rst      => rst_i,
       pwrdwn   => '0',
       clkout0  => pll_core_clk,
+      clkout1  => pll_fast_clk,
       clkfbout => pll_fb,
       locked   => pll_locked
     ); -- mmcme2_base_inst : component mmcme2_base
@@ -57,6 +65,13 @@ begin
     ); -- bufg_core_inst
 
 
+  bufg_fast_inst : component bufg
+    port map (
+      i => pll_fast_clk,
+      o => fast_clk_o
+    ); -- bufg_fast_inst
+
+
   xpm_cdc_sync_core_inst : component xpm_cdc_sync_rst
     generic map (
       DEST_SYNC_FF => 2,
@@ -67,6 +82,17 @@ begin
       dest_clk => core_clk_o,
       dest_rst => core_rst_o
     ); -- xpm_cdc_sync_core_inst
+
+  xpm_cdc_sync_fast_inst : component xpm_cdc_sync_rst
+    generic map (
+      DEST_SYNC_FF => 2,
+      INIT         => 1
+    )
+    port map (
+      src_rst  => not pll_locked,
+      dest_clk => fast_clk_o,
+      dest_rst => fast_rst_o
+    ); -- xpm_cdc_sync_fast_inst
 
 end architecture synthesis;
 
