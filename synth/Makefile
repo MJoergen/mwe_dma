@@ -11,6 +11,7 @@ SRC += $(SRC_DIR)/sweeper.vhd
 PLATFORM_SRC_DIR = .
 SRC += $(PLATFORM_SRC_DIR)/clk_rst.vhd
 SRC += $(PLATFORM_SRC_DIR)/mwe_mega65r6.vhd
+SRC += $(PLATFORM_SRC_DIR)/uart_serdes.vhd
 
 # Top level entity
 TOP = mwe_mega65r6

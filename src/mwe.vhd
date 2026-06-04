@@ -10,8 +10,12 @@ entity mwe is
     fast_clk_i      : in    std_logic;
     fast_rst_i      : in    std_logic;
 
-    uart_rxd_i      : in    std_logic;
-    uart_txd_o      : out   std_logic;
+    uart_rx_ready_o : out   std_logic;
+    uart_rx_valid_i : in    std_logic;
+    uart_rx_data_i  : in    std_logic_vector(7 downto 0);
+    uart_tx_ready_i : in    std_logic;
+    uart_tx_valid_o : out   std_logic;
+    uart_tx_data_o  : out   std_logic_vector(7 downto 0);
 
     cart_en_o       : out   std_logic; -- Enable port, active high
     cart_phi2_o     : out   std_logic;
@@ -119,6 +123,27 @@ architecture synthesis of mwe is
   attribute mark_debug_clock of cart_d_i        : signal is "clk_rst_inst/core_clk_o";
 
 begin
+
+  uart_rx_ready_o <= '1';
+
+  uart_proc : process (core_clk_i)
+  begin
+    if rising_edge(core_clk_i) then
+      if uart_tx_ready_i = '1' then
+        uart_tx_valid_o <= '0';
+      end if;
+
+      if uart_rx_valid_i = '1' then
+        uart_tx_data_o  <= uart_rx_data_i;
+        uart_tx_valid_o <= '1';
+      end if;
+
+      if core_rst_i = '1' then
+        uart_tx_data_o  <= X"41";
+        uart_tx_valid_o <= '1';
+      end if;
+    end if;
+  end process uart_proc;
 
   fast_toggle     <= fast_toggle xor (not fast_busy) when rising_edge(fast_clk_i);
 

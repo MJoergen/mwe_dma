@@ -49,49 +49,59 @@ end entity mwe_mega65r6;
 
 architecture synthesis of mwe_mega65r6 is
 
-  signal core_clk : std_logic;
-  signal core_rst : std_logic;
+  constant C_CLOCK_KHZ : natural := 31_250;
+  constant C_BAUDRATE  : natural := 115_200;
 
-  signal fast_clk : std_logic;
-  signal fast_rst : std_logic;
+  signal   core_clk : std_logic;
+  signal   core_rst : std_logic;
 
-  signal cart_en        : std_logic;
-  signal cart_reset_oe  : std_logic;
-  signal cart_reset_in  : std_logic;
-  signal cart_reset_out : std_logic;
-  signal cart_game_oe   : std_logic;
-  signal cart_game_in   : std_logic;
-  signal cart_game_out  : std_logic;
-  signal cart_exrom_oe  : std_logic;
-  signal cart_exrom_in  : std_logic;
-  signal cart_exrom_out : std_logic;
-  signal cart_nmi_oe    : std_logic;
-  signal cart_nmi_in    : std_logic;
-  signal cart_nmi_out   : std_logic;
-  signal cart_irq_oe    : std_logic;
-  signal cart_irq_in    : std_logic;
-  signal cart_irq_out   : std_logic;
-  signal cart_roml_oe   : std_logic;
-  signal cart_roml_in   : std_logic;
-  signal cart_roml_out  : std_logic;
-  signal cart_romh_oe   : std_logic;
-  signal cart_romh_in   : std_logic;
-  signal cart_romh_out  : std_logic;
-  signal cart_ctrl_oe   : std_logic;
-  signal cart_ba_in     : std_logic;
-  signal cart_rw_in     : std_logic;
-  signal cart_io1_in    : std_logic;
-  signal cart_io2_in    : std_logic;
-  signal cart_ba_out    : std_logic;
-  signal cart_rw_out    : std_logic;
-  signal cart_io1_out   : std_logic;
-  signal cart_io2_out   : std_logic;
-  signal cart_addr_oe   : std_logic;
-  signal cart_a_in      : std_logic_vector(15 downto 0);
-  signal cart_a_out     : std_logic_vector(15 downto 0);
-  signal cart_data_oe   : std_logic;
-  signal cart_d_in      : std_logic_vector(7 downto 0);
-  signal cart_d_out     : std_logic_vector(7 downto 0);
+  signal   fast_clk : std_logic;
+  signal   fast_rst : std_logic;
+
+  signal   uart_tx_ready : std_logic;
+  signal   uart_tx_valid : std_logic;
+  signal   uart_tx_data  : std_logic_vector(7 downto 0);
+  signal   uart_rx_ready : std_logic;
+  signal   uart_rx_valid : std_logic;
+  signal   uart_rx_data  : std_logic_vector(7 downto 0);
+
+  signal   cart_en        : std_logic;
+  signal   cart_reset_oe  : std_logic;
+  signal   cart_reset_in  : std_logic;
+  signal   cart_reset_out : std_logic;
+  signal   cart_game_oe   : std_logic;
+  signal   cart_game_in   : std_logic;
+  signal   cart_game_out  : std_logic;
+  signal   cart_exrom_oe  : std_logic;
+  signal   cart_exrom_in  : std_logic;
+  signal   cart_exrom_out : std_logic;
+  signal   cart_nmi_oe    : std_logic;
+  signal   cart_nmi_in    : std_logic;
+  signal   cart_nmi_out   : std_logic;
+  signal   cart_irq_oe    : std_logic;
+  signal   cart_irq_in    : std_logic;
+  signal   cart_irq_out   : std_logic;
+  signal   cart_roml_oe   : std_logic;
+  signal   cart_roml_in   : std_logic;
+  signal   cart_roml_out  : std_logic;
+  signal   cart_romh_oe   : std_logic;
+  signal   cart_romh_in   : std_logic;
+  signal   cart_romh_out  : std_logic;
+  signal   cart_ctrl_oe   : std_logic;
+  signal   cart_ba_in     : std_logic;
+  signal   cart_rw_in     : std_logic;
+  signal   cart_io1_in    : std_logic;
+  signal   cart_io2_in    : std_logic;
+  signal   cart_ba_out    : std_logic;
+  signal   cart_rw_out    : std_logic;
+  signal   cart_io1_out   : std_logic;
+  signal   cart_io2_out   : std_logic;
+  signal   cart_addr_oe   : std_logic;
+  signal   cart_a_in      : std_logic_vector(15 downto 0);
+  signal   cart_a_out     : std_logic_vector(15 downto 0);
+  signal   cart_data_oe   : std_logic;
+  signal   cart_d_in      : std_logic_vector(7 downto 0);
+  signal   cart_d_out     : std_logic_vector(7 downto 0);
 
 begin
 
@@ -105,14 +115,35 @@ begin
       fast_rst_o => fast_rst
     ); -- clk_rst_inst : entity work.clk_rst
 
+  uart_serdes_inst : entity work.uart_serdes
+    generic map (
+      G_DIVISOR => C_CLOCK_KHZ * 1000 / C_BAUDRATE
+    )
+    port map (
+      clk_i      => core_clk,
+      rst_i      => core_rst,
+      tx_ready_o => uart_tx_ready,
+      tx_valid_i => uart_tx_valid,
+      tx_data_i  => uart_tx_data,
+      rx_ready_i => uart_rx_ready,
+      rx_valid_o => uart_rx_valid,
+      rx_data_o  => uart_rx_data,
+      uart_tx_o  => uart_txd_o,
+      uart_rx_i  => uart_rxd_i
+    ); -- uart_serdes_inst : entity work.uart_serdes
+
   mwe_inst : entity work.mwe
     port map (
       core_clk_i      => core_clk,
       core_rst_i      => core_rst,
       fast_clk_i      => fast_clk,
       fast_rst_i      => fast_rst,
-      uart_rxd_i      => uart_rxd_i,
-      uart_txd_o      => uart_txd_o,
+      uart_rx_ready_o => uart_rx_ready,
+      uart_rx_valid_i => uart_rx_valid,
+      uart_rx_data_i  => uart_rx_data,
+      uart_tx_ready_i => uart_tx_ready,
+      uart_tx_valid_o => uart_tx_valid,
+      uart_tx_data_o  => uart_tx_data,
       cart_en_o       => cart_en,      -- Enable port, active high
       cart_phi2_o     => cart_phi2_o,
       cart_dotclock_o => cart_dotclock_o,
