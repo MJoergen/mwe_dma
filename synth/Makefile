@@ -3,6 +3,7 @@ SRC_DIR = ../src
 SRC += $(SRC_DIR)/bram.vhd
 SRC += $(SRC_DIR)/cart.vhd
 SRC += $(SRC_DIR)/crc.vhd
+SRC += $(SRC_DIR)/master.vhd
 SRC += $(SRC_DIR)/mwe.vhd
 SRC += $(SRC_DIR)/sweeper.vhd
 

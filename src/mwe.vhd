@@ -63,14 +63,23 @@ architecture synthesis of mwe is
   signal   core_addr : std_logic_vector(C_ADDR_SIZE - 1 downto 0);
   signal   core_data : std_logic_vector(7 downto 0);
 
+  signal   wbus_cyc   : std_logic;
+  signal   wbus_stall : std_logic;
+  signal   wbus_stb   : std_logic;
+  signal   wbus_addr  : std_logic_vector(15 downto 0);
+  signal   wbus_we    : std_logic;
+  signal   wbus_wrdat : std_logic_vector(7 downto 0);
+  signal   wbus_ack   : std_logic;
+  signal   wbus_rddat : std_logic_vector(7 downto 0);
+
   signal   fast_start : std_logic := '1';
   signal   fast_busy  : std_logic;
   signal   fast_crc   : std_logic_vector(15 downto 0);
-  signal   fast_cyc   : std_logic;                                  -- Valid bus cycle
-  signal   fast_stb   : std_logic;                                  -- Strobe signals / core select signal
-  signal   fast_addr  : std_logic_vector(C_ADDR_SIZE - 1 downto 0); -- lower address bits
-  signal   fast_ack   : std_logic;                                  -- Bus cycle acknowledge
-  signal   fast_rddat : std_logic_vector(31 downto 0);              -- Read Databus
+  signal   fast_cyc   : std_logic;
+  signal   fast_stb   : std_logic;
+  signal   fast_addr  : std_logic_vector(C_ADDR_SIZE - 1 downto 0);
+  signal   fast_ack   : std_logic;
+  signal   fast_rddat : std_logic_vector(31 downto 0);
 
   signal   fast_toggle : std_logic;
 
@@ -133,6 +142,21 @@ begin
   cart_romh_o     <= '1';
 
 
+  master_inst : entity work.master
+    port map (
+      clk_i        => core_clk_i,
+      rst_i        => core_rst_i,
+      start_i      => '1',
+      wbus_cyc_o   => wbus_cyc,
+      wbus_stall_i => wbus_stall,
+      wbus_stb_o   => wbus_stb,
+      wbus_addr_o  => wbus_addr,
+      wbus_we_o    => wbus_we,
+      wbus_wrdat_o => wbus_wrdat,
+      wbus_ack_i   => wbus_ack,
+      wbus_rddat_i => wbus_rddat
+    ); -- master_inst : entity work.master
+
   cart_inst : entity work.cart
     generic map (
       G_ADDR_SIZE => C_ADDR_SIZE
@@ -142,6 +166,14 @@ begin
       rst_i           => core_rst_i,
       bram_addr_o     => core_addr,
       bram_data_i     => core_data,
+      wbus_cyc_i      => wbus_cyc,
+      wbus_stall_o    => wbus_stall,
+      wbus_stb_i      => wbus_stb,
+      wbus_addr_i     => wbus_addr,
+      wbus_we_i       => wbus_we,
+      wbus_wrdat_i    => wbus_wrdat,
+      wbus_ack_o      => wbus_ack,
+      wbus_rddat_o    => wbus_rddat,
       cart_phi2_o     => cart_phi2_o,
       cart_dotclock_o => cart_dotclock_o,
       cart_dma_i      => cart_dma_i,
